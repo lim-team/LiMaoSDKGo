@@ -1,8 +1,10 @@
 package limsdk
 
 import (
+	"context"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/lim-team/LiMaoSDK/core"
 	"github.com/stretchr/testify/assert"
@@ -14,9 +16,11 @@ func TestOnEvents(t *testing.T) {
 	var waitG sync.WaitGroup
 	waitG.Add(1)
 
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+
 	sdk.OnEvents(func(events []*core.Event) {
 		assert.Equal(t, int64(1), events[0].EventID)
-		waitG.Done()
+		cancel()
 	})
 
 	sdk.API.MockAddEvent(&core.Event{
@@ -26,6 +30,8 @@ func TestOnEvents(t *testing.T) {
 
 	sdk.Start()
 
-	waitG.Wait()
+	<-timeoutCtx.Done()
+
+	assert.Equal(t, context.Canceled, timeoutCtx.Err())
 
 }
