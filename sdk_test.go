@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/lim-team/LiMaoSDK/core"
+	"github.com/lim-team/LiMaoSDKGo/core"
 	"github.com/stretchr/testify/assert"
 )
 

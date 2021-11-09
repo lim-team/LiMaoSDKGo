@@ -3,7 +3,7 @@ package limsdk
 import (
 	"sync"
 
-	"github.com/lim-team/LiMaoSDK/core"
+	"github.com/lim-team/LiMaoSDKGo/core"
 )
 
 type LiMaoSDK struct {
