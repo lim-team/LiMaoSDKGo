@@ -1,4 +1,4 @@
-module github.com/lim-team/LiMaoSDK
+module github.com/lim-team/LiMaoSDKGo
 
 go 1.16
 
