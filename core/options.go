@@ -16,6 +16,7 @@ func NewOptions(opts ...Option) *Options {
 		APIURL:            "http://175.27.245.108:8081/v1",
 		EventLoopDuration: time.Millisecond * 300,
 	}
+	
 
 	if len(opts) > 0 {
 		for _, opt := range opts {

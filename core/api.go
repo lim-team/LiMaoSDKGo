@@ -5,6 +5,7 @@ import "fmt"
 type API interface {
 	GetEvents(offsetEventID int64) (*getEventResp, error)
 	MockAddEvent(event *Event)
+	AnswerInlineQuery(result *InlineQueryResult) error
 }
 
 type LIMAPI struct {
@@ -31,15 +32,14 @@ func (a *LIMAPI) GetEvents(offsetEventID int64) (*getEventResp, error) {
 		}, nil
 	}
 
-	url := fmt.Sprintf("%s/robots/%s/%s/getEvents", a.opts.APIURL, a.opts.AppID, a.opts.AppKey)
-	resp, err := Get(url, map[string]string{
+	data, err := a.request("getEvents", map[string]string{
 		"event_id": fmt.Sprintf("%d", offsetEventID),
-	}, nil)
+	})
 	if err != nil {
 		return nil, err
 	}
 	var getEventResp *getEventResp
-	err = ReadJsonByByte([]byte(resp.Body), &getEventResp)
+	err = ReadJsonByByte(data, &getEventResp)
 	if err != nil {
 		return nil, err
 	}
@@ -48,4 +48,19 @@ func (a *LIMAPI) GetEvents(offsetEventID int64) (*getEventResp, error) {
 
 func (a *LIMAPI) MockAddEvent(event *Event) {
 	a.mockEvents = append(a.mockEvents, event)
+}
+
+func (a *LIMAPI) AnswerInlineQuery(result *InlineQueryResult) error {
+	_, err := a.request("answerInlineQuery", result)
+	return err
+}
+
+func (a *LIMAPI) request(method string, payload interface{}) ([]byte, error) {
+	url := fmt.Sprintf("%s/robots/%s/%s/%s", a.opts.APIURL, a.opts.AppID, a.opts.AppKey, method)
+
+	resp, err := Post(url, []byte(ToJson(payload)), nil)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(resp.Body), nil
 }

@@ -1,10 +1,11 @@
 package core
 
-type EventsListener func(events []*Event)
+type EventsListener func(eventResult *EventResult)
 
 type Event struct {
-	EventID int64    `json:"event_id"`
-	Message *Message `json:"message"`
+	EventID     int64        `json:"event_id"`
+	Message     *Message     `json:"message"`
+	InlineQuery *InlineQuery `json:"inline_query"`
 }
 
 type Message struct {
@@ -33,7 +34,9 @@ type Entitiy struct {
 	Type   string `json:"type"`
 }
 
-type MessageSeq struct {
+type MessageReq struct {
+	Channel         // 接受频道
+	Payload Payload // 消息负载
 }
 
 type Channel struct {
@@ -44,4 +47,40 @@ type Channel struct {
 type getEventResp struct {
 	Status  int      `json:"status"`
 	Results []*Event `json:"results"`
+}
+
+type EventResult struct {
+	Events []*Event
+	ACK    func()
+}
+
+type InlineQuery struct {
+	SID         string `json:"sid"`
+	ChannelID   string `json:"channel_id"`
+	ChannelType uint8  `json:"channel_type"`
+	FromUID     string `json:"from_uid"` // 发送者uid
+	Query       string `json:"query"`    // 查询关键字
+}
+
+type ResultType string
+
+const (
+	ResultTypeGIF ResultType = "gif"
+)
+
+type InlineQueryResult struct {
+	InlineQuerySID string `json:"inline_query_sid"`
+	// 结果类型
+	Type ResultType `json:"type"`
+	// 结果ID
+	ID      string        `json:"id"`
+	Results []interface{} `json:"results"`
+}
+
+// gif 结果
+type GifResult struct {
+	URL string `json:"url"` // gif完整路径
+	// option
+	Width  int `json:"width,omitempty"`
+	Height int `json:"height,omitempty"`
 }

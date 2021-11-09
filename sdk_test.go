@@ -2,7 +2,6 @@ package limsdk
 
 import (
 	"context"
-	"sync"
 	"testing"
 	"time"
 
@@ -13,13 +12,11 @@ import (
 func TestOnEvents(t *testing.T) {
 	sdk := New(core.NewOptions(core.WithTest(true)))
 
-	var waitG sync.WaitGroup
-	waitG.Add(1)
-
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 
-	sdk.OnEvents(func(events []*core.Event) {
-		assert.Equal(t, int64(1), events[0].EventID)
+	go sdk.OnEvents(func(eventResult *core.EventResult) {
+		assert.Equal(t, int64(1), eventResult.Events[0].EventID)
+		eventResult.ACK()
 		cancel()
 	})
 
@@ -27,8 +24,6 @@ func TestOnEvents(t *testing.T) {
 		EventID: 1,
 		Message: &core.Message{},
 	})
-
-	sdk.Start()
 
 	<-timeoutCtx.Done()
 

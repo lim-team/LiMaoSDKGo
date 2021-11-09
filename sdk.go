@@ -1,6 +1,8 @@
 package limsdk
 
 import (
+	"sync"
+
 	"github.com/lim-team/LiMaoSDK/core"
 )
 
@@ -8,6 +10,7 @@ type LiMaoSDK struct {
 	eventManager *core.EventManager
 	stopChan     chan bool
 	API          core.API
+	eventOnce    sync.Once
 }
 
 func New(opts *core.Options) *LiMaoSDK {
@@ -20,7 +23,14 @@ func New(opts *core.Options) *LiMaoSDK {
 }
 
 func (l *LiMaoSDK) OnEvents(listener core.EventsListener) {
+
 	l.eventManager.SetEventsListener(listener)
+
+	l.eventOnce.Do(func() {
+		l.eventManager.Start()
+	})
+
+	<-l.stopChan
 }
 
 func (l *LiMaoSDK) SendMessage(channel *core.Channel, payload *core.Payload) error {
@@ -28,17 +38,11 @@ func (l *LiMaoSDK) SendMessage(channel *core.Channel, payload *core.Payload) err
 	return nil
 }
 
-func (l *LiMaoSDK) Run() {
-	l.eventManager.Start()
+func (l *LiMaoSDK) AnswerInlineQuery(result *core.InlineQueryResult) error {
 
-	<-l.stopChan
+	return l.API.AnswerInlineQuery(result)
 }
 
-func (l *LiMaoSDK) Stop() {
-	l.eventManager.Stop()
+func (l *LiMaoSDK) StopEvents() {
 	close(l.stopChan)
-}
-
-func (l *LiMaoSDK) Start() {
-	l.eventManager.Start()
 }

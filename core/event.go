@@ -40,9 +40,7 @@ func (e *EventManager) loopEvent() {
 				continue
 			}
 			if getEventResp != nil && getEventResp.Status == 1 {
-				if len(getEventResp.Results) > 0 {
-					e.currentEventID = getEventResp.Results[len(getEventResp.Results)-1].EventID
-				}
+
 				e.eventsChan <- getEventResp.Results
 			}
 
@@ -64,7 +62,13 @@ func (e *EventManager) handleEvents() {
 		select {
 		case events := <-e.eventsChan:
 			if e.eventsListener != nil {
-				e.eventsListener(events)
+
+				e.eventsListener(&EventResult{
+					Events: events,
+					ACK: func() {
+						e.currentEventID = events[len(events)-1].EventID
+					},
+				})
 			}
 		case <-e.stopChan:
 			goto exit
