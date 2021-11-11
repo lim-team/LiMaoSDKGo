@@ -32,8 +32,8 @@ func (a *LIMAPI) GetEvents(offsetEventID int64) (*getEventResp, error) {
 		}, nil
 	}
 
-	data, err := a.request("getEvents", map[string]string{
-		"event_id": fmt.Sprintf("%d", offsetEventID),
+	data, err := a.request("getEvents", map[string]interface{}{
+		"event_id": offsetEventID,
 	})
 	if err != nil {
 		return nil, err
@@ -57,7 +57,6 @@ func (a *LIMAPI) AnswerInlineQuery(result *InlineQueryResult) error {
 
 func (a *LIMAPI) request(method string, payload interface{}) ([]byte, error) {
 	url := fmt.Sprintf("%s/robots/%s/%s/%s", a.opts.APIURL, a.opts.AppID, a.opts.AppKey, method)
-
 	resp, err := Post(url, []byte(ToJson(payload)), nil)
 	if err != nil {
 		return nil, err

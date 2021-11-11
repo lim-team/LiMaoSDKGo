@@ -51,7 +51,6 @@ type getEventResp struct {
 
 type EventResult struct {
 	Events []*Event
-	ACK    func()
 }
 
 type InlineQuery struct {
@@ -60,6 +59,7 @@ type InlineQuery struct {
 	ChannelType uint8  `json:"channel_type"`
 	FromUID     string `json:"from_uid"` // 发送者uid
 	Query       string `json:"query"`    // 查询关键字
+	Offset      string `json:"offset"`   // 偏移量
 }
 
 type ResultType string
@@ -73,8 +73,9 @@ type InlineQueryResult struct {
 	// 结果类型
 	Type ResultType `json:"type"`
 	// 结果ID
-	ID      string        `json:"id"`
-	Results []interface{} `json:"results"`
+	ID         string      `json:"id"`
+	Results    interface{} `json:"results"`
+	NextOffset string      `json:"next_offset"` // 下一次偏移量
 }
 
 // gif 结果

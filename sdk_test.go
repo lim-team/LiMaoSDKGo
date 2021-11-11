@@ -16,7 +16,6 @@ func TestOnEvents(t *testing.T) {
 
 	go sdk.OnEvents(func(eventResult *core.EventResult) {
 		assert.Equal(t, int64(1), eventResult.Events[0].EventID)
-		eventResult.ACK()
 		cancel()
 	})
 
