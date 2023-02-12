@@ -9,6 +9,7 @@ type Options struct {
 	EventLoopDuration time.Duration
 	Test              bool
 	API               API
+	RobotID           string
 }
 
 func NewOptions(opts ...Option) *Options {
@@ -16,7 +17,6 @@ func NewOptions(opts ...Option) *Options {
 		APIURL:            "http://175.27.245.108:8081/v1",
 		EventLoopDuration: time.Millisecond * 300,
 	}
-	
 
 	if len(opts) > 0 {
 		for _, opt := range opts {
@@ -33,6 +33,12 @@ func WithAppID(appID string) Option {
 
 	return func(opts *Options) {
 		opts.AppID = appID
+	}
+}
+func WithRobotID(robotID string) Option {
+
+	return func(opts *Options) {
+		opts.RobotID = robotID
 	}
 }
 

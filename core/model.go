@@ -1,11 +1,52 @@
 package core
 
+import "github.com/gookit/goutil/maputil"
+
 type EventsListener func(eventResult *EventResult)
 
 type Event struct {
 	EventID     int64        `json:"event_id"`
 	Message     *Message     `json:"message"`
 	InlineQuery *InlineQuery `json:"inline_query"`
+}
+
+type Payload map[string]any
+
+func (p Payload) Text() (PayloadText, error) {
+
+	result := maputil.Data(p)
+
+	contentType := ContentType(result.Int("type"))
+	if contentType != Text {
+		return PayloadText{}, ErrorContentType
+	}
+
+	entitieResultObjObj := result.Get("entities")
+	entities := make([]*Entitiy, 0)
+
+	if entitieResultObjObj != nil {
+		entitieResultObjs := entitieResultObjObj.([]interface{})
+		for _, entitieResultObj := range entitieResultObjs {
+			entitieResults := entitieResultObj.([]map[string]any)
+			for _, entitieResult := range entitieResults {
+				entitieResultData := maputil.Data(entitieResult)
+				entities = append(entities, &Entitiy{
+					Length: entitieResultData.Int("length"),
+					Offset: int(entitieResultData.Int("offset")),
+					Type:   entitieResultData.Str("type"),
+				})
+			}
+		}
+
+	}
+
+	return PayloadText{
+		PayloadBase: PayloadBase{
+			Type:     contentType,
+			Entities: entities,
+		},
+		Content: result.Str("content"),
+	}, nil
 }
 
 type Message struct {
@@ -17,15 +58,36 @@ type Message struct {
 	Payload Payload `json:"payload"` // 消息正文
 }
 
-type Payload struct {
-	Type        int        `json:"type"`
-	Content     string     `json:"content"`
-	Entities    []*Entitiy `json:"entities"`
-	PayloadText            // 文本消息
+type PayloadBase struct {
+	Type     ContentType `json:"type"`
+	Entities []*Entitiy  `json:"entities"`
 }
 
 type PayloadText struct {
+	PayloadBase
 	Content string `json:"content"`
+}
+
+func NewPayloadText(content string, entities ...*Entitiy) PayloadText {
+
+	return PayloadText{
+		PayloadBase: PayloadBase{
+			Type:     Text,
+			Entities: entities,
+		},
+		Content: content,
+	}
+}
+
+func (p PayloadText) Payload() Payload {
+	mp := map[string]any{
+		"type":    p.Type,
+		"content": p.Content,
+	}
+	if len(p.Entities) > 0 {
+		mp["entities"] = p.Entities
+	}
+	return Payload(mp)
 }
 
 type Entitiy struct {
@@ -36,7 +98,13 @@ type Entitiy struct {
 
 type MessageReq struct {
 	Channel         // 接受频道
-	Payload Payload // 消息负载
+	Payload Payload `json:"payload"` // 消息正文 // 消息负载
+}
+
+type MessageResp struct {
+	MessageID   int64  `json:"message_id"`    // 消息ID
+	ClientMsgNo string `json:"client_msg_no"` // 客户端消息唯一编号
+	MessageSeq  uint32 `json:"message_seq"`   // 消息序号
 }
 
 type Channel struct {

@@ -33,14 +33,25 @@ func (l *LiMaoSDK) OnEvents(listener core.EventsListener) {
 	<-l.stopChan
 }
 
-func (l *LiMaoSDK) SendMessage(channel *core.Channel, payload *core.Payload) error {
+func (l *LiMaoSDK) SendMessage(channel *core.Channel, payload core.Payload) (*core.MessageResp, error) {
 
-	return nil
+	return l.API.SendMessage(&core.MessageReq{
+		Channel: core.Channel{
+			ChannelID:   channel.ChannelID,
+			ChannelType: channel.ChannelType,
+		},
+		Payload: payload,
+	})
 }
 
 func (l *LiMaoSDK) AnswerInlineQuery(result *core.InlineQueryResult) error {
 
 	return l.API.AnswerInlineQuery(result)
+}
+
+func (l *LiMaoSDK) Typing(channelID string, channelType uint8) error {
+
+	return l.API.Typing(channelID, channelType)
 }
 
 func (l *LiMaoSDK) StopEvents() {
