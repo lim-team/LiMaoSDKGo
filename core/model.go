@@ -27,15 +27,18 @@ func (p Payload) Text() (PayloadText, error) {
 	if entitieResultObjObj != nil {
 		entitieResultObjs := entitieResultObjObj.([]interface{})
 		for _, entitieResultObj := range entitieResultObjs {
-			entitieResults := entitieResultObj.([]map[string]any)
-			for _, entitieResult := range entitieResults {
-				entitieResultData := maputil.Data(entitieResult)
-				entities = append(entities, &Entitiy{
-					Length: entitieResultData.Int("length"),
-					Offset: int(entitieResultData.Int("offset")),
-					Type:   entitieResultData.Str("type"),
-				})
+			entitieResults, ok := entitieResultObj.([]map[string]any)
+			if ok {
+				for _, entitieResult := range entitieResults {
+					entitieResultData := maputil.Data(entitieResult)
+					entities = append(entities, &Entitiy{
+						Length: entitieResultData.Int("length"),
+						Offset: int(entitieResultData.Int("offset")),
+						Type:   entitieResultData.Str("type"),
+					})
+				}
 			}
+
 		}
 
 	}
